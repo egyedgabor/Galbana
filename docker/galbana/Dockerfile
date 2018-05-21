@@ -39,8 +39,13 @@ RUN apt-get install -y python3.6-dev
 RUN pip install --no-cache-dir uwsgi==2.0.17
 
 RUN pip install --no-cache-dir dumb-init==1.2.1
+RUN pip install --no-cache-dir elasticsearch==6.2.0
+RUN pip install --no-cache-dir djangorestframework==3.7.7
+RUN pip install --no-cache-dir unicodecsv==0.14.1
+RUN pip install --no-cache-dir django-decorator-include==1.4
 
-COPY copy copy
+COPY docker/galbana/copy copy
+COPY docker/utils.sh copy/utils.sh
 COPY --chown=django:django django_project django_project
 COPY --chown=django:django static static
 

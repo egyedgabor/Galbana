@@ -2,6 +2,7 @@ version: "3.6"
 
 volumes:
   data:
+    driver: local
 
 networks:
   default:
@@ -36,7 +37,6 @@ services:
     command: ["nginx"]
     volumes:
       - "./.secrets/nginx:/run/secrets:ro"
-
     ports:
       - "80:80"
       - "443:443"

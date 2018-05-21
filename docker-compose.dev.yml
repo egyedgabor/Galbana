@@ -4,14 +4,18 @@ services:
   postgres:
     build:
       context: .
+      dockerfile: docker/galbana/Dockerfile
     volumes:
-      - "./copy:/copy"
+      - "./docker/galbana/copy:/copy"
+      - "./docker/utils.sh:/copy/utils.sh"
 
   django:
     volumes:
-      - "./copy:/copy"
+      - "./docker/galbana/copy:/copy"
+      - "./docker/utils.sh:/copy/utils.sh"
       - "./django_project:/django_project"
 
   nginx:
     volumes:
-      - "./copy:/copy"
+        - "./docker/galbana/copy:/copy"
+        - "./docker/utils.sh:/copy/utils.sh"

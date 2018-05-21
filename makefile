@@ -43,3 +43,24 @@ push: img = $(REGISTRY_URL)/$(COMPOSE_PROJECT_NAME)
 push: build
 	docker tag $(img):latest $(img):$(timestamp)
 	docker push "$(img):$(timestamp)"
+
+################################################################################
+.PHONY: migrate
+
+## django-admin migrations
+migrate:
+	docker-compose run --rm django django-admin migrate
+
+################################################################################
+.PHONY: makemigrations
+
+## django-admin migrations
+makemigrations:
+	docker-compose run --rm -u "$(usr)" -v "$(CURDIR):/gstack" -w "/gstack" django dajngo-admin makemigrations
+
+################################################################################
+.PHONY: create_superuser
+
+## django-admin migrations
+create_superuser:
+	docker-compose run --rm django django-admin createsuperuser
