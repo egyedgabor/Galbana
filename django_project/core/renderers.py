@@ -1,10 +1,22 @@
 # coding: utf-8
 from io import BytesIO
-import json
 
 # Django core and 3rd party imports
 import unicodecsv as csv
 from rest_framework.renderers import BaseRenderer, BrowsableAPIRenderer
+
+
+def flatten_json(y):
+    out = {}
+
+    def flatten(x, name=''):
+        if type(x) is dict:
+            for a in x:
+                flatten(x[a], name + a + '_')
+        else:
+            out[name[:-1]] = x
+    flatten(y)
+    return out
 
 
 class BrowsableAPIRendererWithoutForm(BrowsableAPIRenderer):
@@ -31,21 +43,15 @@ class CSVRenderer(BaseRenderer):
         filename = self.get_csv_filename(view)
         response['Content-Disposition'] = 'attachment; filename=%s' % filename
 
-        for key, value in data.iteritems():
-            print(key, value)
-
         f = BytesIO()
-        f.write(b'\xef\xbb\xbf')  # utf-8 BOM
-        w = csv.writer(f, encoding='utf-8')
+        writer = csv.writer(f, encoding='utf-8')
+        for elem in data['hits']['hits']:
+            flat = flatten_json(elem)
+            keys = flat.keys()
+        writer.writerow(keys)
 
-        start = data['hits']['hits']
-        second = start[0]['_source']
-        header = list(second.keys())
-        w.writerow(header)
-        # print(second)
-        # for row in start:
-        #     for key in row['_source']:
-        #         print(key.values_list)
-
+        for elem in data['hits']['hits']:
+            flat = flatten_json(elem)
+            writer.writerow(flat.values())
 
         return f.getvalue()

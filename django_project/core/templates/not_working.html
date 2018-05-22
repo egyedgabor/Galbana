@@ -1,0 +1,20 @@
+{% load staticfiles %}
+<!doctype html>
+<title>Site Maintenance</title>
+<style>
+  body { text-align: center; padding: 150px; }
+  h1 { font-size: 50px; }
+  body { font: 20px Helvetica, sans-serif; color: #333; background: #c8f5f6}
+  article { display: block; text-align: left; width: 650px; margin: 0 auto; }
+  a { color: #dc8100; text-decoration: none; }
+  a:hover { color: #333; text-decoration: none; }
+</style>
+
+<article>
+    <h1>Elastic Connection Failed!</h1>
+    <div>
+        <p>Please check your Elasticserach service, {{host}}:{{port}}</p>
+        <p>&mdash; Galaktika Solutions</p>
+    </div>
+</article>
+<div><img style="height: 300px" src="{% static 'images/sad.png' %}"/></div>

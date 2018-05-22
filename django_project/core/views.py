@@ -1,43 +1,145 @@
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, exceptions as es_exceptions
+from elasticsearch_dsl import Search, connections
 from rest_framework.response import Response
+from django.http import HttpResponse
+from django.template import loader
 from django.shortcuts import render
 from rest_framework.views import APIView, View
+import os
 
-from .mixins import LoginRequiredMixin
 from .renderers import CSVRenderer
+from .mixins import LoginRequiredMixin
 
 
-class Elastic(LoginRequiredMixin, APIView, CSVRenderer):
+def elastic():
+    connections.configure(
+        default={
+            'hosts': os.environ['ELASTICSEARCH_HOST'],
+            'port': os.environ['ELASTICSEARCH_PORT'],
+            'use_ssl': True,
+            'verify_certs': True,
+            'ca_certs': '/run/secrets/ca.crt',
+            'client_cert': '/run/secrets/certificate.crt',
+            'client_key': '/run/secrets/certificate.key'
+
+        },
+    )
+
+    es = Elasticsearch(
+        host=os.environ['ELASTICSEARCH_HOST'],
+        port=os.environ['ELASTICSEARCH_PORT'],
+        use_ssl=True,
+        verify_certs=True,
+        ca_certs='/run/secrets/ca.crt',
+        client_cert='/run/secrets/certificate.crt',
+        client_key='/run/secrets/certificate.key'
+
+    )
+    try:
+        es.info()
+    except es_exceptions.ConnectionError:
+        template = loader.get_template('not_working.html')
+        context = {
+            'host': os.environ['ELASTICSEARCH_HOST'],
+            'port': os.environ['ELASTICSEARCH_PORT']
+        }
+        return ({
+            'response': HttpResponse(template.render(context)),
+            'status': 'ERROR'
+        })
+    return ({'response': es, 'status': 'OK'})
+
+
+def flatten_json(y):
+    out = {}
+
+    def flatten(x, name=''):
+        if type(x) is dict:
+            for a in x:
+                flatten(x[a], name + a + '_')
+        else:
+            out[name[:-1]] = x
+    flatten(y)
+    return out
+
+
+class Sudo(LoginRequiredMixin, APIView, CSVRenderer):
     def get(self, request):
-        es = Elasticsearch(
-            host='192.168.5.68',
-            port=9201,
-            use_ssl=True,
-            verify_certs=True,
-            ca_certs='/run/secrets/ca.crt',
-            client_cert='/run/secrets/certificate.crt',
-            client_key='/run/secrets/certificate.key'
+        if elastic()['status'] == 'ERROR':
+            return elastic()['response']
+        else:
+            es = elastic()['response']
 
-        )
-        sudo = es.search(
-            index="filebeat-*",
-            body={"query": {
-                    "bool": {
-                        "must": [{
-                            "term": {"system.auth.program": "sudo"}
-                        }],
-                        "must_not": [], "should": []
-                    }
-                },
-                "from": 0, "size": 10, "sort": [], "aggs": {}
-            }
-        )
-        return Response(sudo)
+        s = Search(using=es, index="filebeat-*").from_dict({
+            "query": {
+                "bool": {
+                    "must": [{
+                        "term": {"system.auth.program": "sudo"}
+                    }],
+                    "must_not": [], "should": []
+                }
+            },
+
+            "from": 0, "size": 1000, "sort": [], "aggs": {}
+        }).execute().to_dict()
+
+        return Response(s)
+
+
+class Ssh(LoginRequiredMixin, APIView, CSVRenderer):
+    def get(self, request):
+        if elastic()['status'] == 'ERROR':
+            return elastic()['response']
+        else:
+            es = elastic()['response']
+
+        s = Search(using=es, index="filebeat-*").from_dict({
+            "query": {
+                "query_string": {
+                  "query": "_exists_:system.auth.ssh.method",
+                  "analyze_wildcard": 'true',
+                  "default_field": "*"
+                }
+            },
+            "from": 0, "size": 1000,
+            "sort": [
+              "@timestamp"
+            ], "aggs": {}
+        }).execute().to_dict()
+
+
+class Postgres(LoginRequiredMixin, APIView, CSVRenderer):
+    def get(self, request):
+        if elastic()['status'] == 'ERROR':
+            return elastic()['response']
+        else:
+            es = elastic()['response']
+
+        s = Search(using=es, index="filebeat-*").from_dict({
+            "query": {
+                "bool": {
+                    "must": [{
+                        "wildcard": {
+                            "postgresql.log.user": "*"
+                        }
+                    }],
+                    "must_not": [{
+                        "term": {
+                            "postgresql.log.user": "unknown"
+                        }
+                    }], "should": []
+                }
+            },
+
+            "from": 0, "size": 1000, "sort": ['@timestamp'], "aggs": {}
+        }).execute().to_dict()
+
+        return Response(s)
 
 
 class index(LoginRequiredMixin, View):
     def get(self, request,):
         return render(
             request,
-            'home.html',
+            'home.html'
         )

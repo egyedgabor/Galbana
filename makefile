@@ -56,7 +56,7 @@ migrate:
 
 ## django-admin migrations
 makemigrations:
-	docker-compose run --rm -u "$(usr)" -v "$(CURDIR):/gstack" -w "/gstack" django dajngo-admin makemigrations
+	docker-compose run --rm django django-admin makemigrations
 
 ################################################################################
 .PHONY: create_superuser

@@ -43,6 +43,10 @@ RUN pip install --no-cache-dir elasticsearch==6.2.0
 RUN pip install --no-cache-dir djangorestframework==3.7.7
 RUN pip install --no-cache-dir unicodecsv==0.14.1
 RUN pip install --no-cache-dir django-decorator-include==1.4
+RUN pip install --no-cache-dir django-debug-toolbar==1.9.1
+RUN pip install --no-cache-dir django-extensions==2.0.3
+RUN pip install --no-cache-dir elasticsearch-dsl==6.1.0
+RUN pip install --no-cache-dir django-inlinecss==0.1.2
 
 COPY docker/galbana/copy copy
 COPY docker/utils.sh copy/utils.sh

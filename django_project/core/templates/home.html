@@ -8,6 +8,12 @@
 {% block content %}
 {% if user.is_authenticated %}
   Hi {{ user.username }}!
+  <div>
+  <a href={% url 'sudo' %}?format=csv>sudo</a>
+  <br>
+  <a href={% url 'ssh' %}?format=csv>ssh</a>
+  <br>
+  <a href={% url 'postgres' %}?format=csv>postgres</a>
   <p><a href="{% url 'logout' %}">logout</a></p>
 {% endif %}
 {% endblock %}
