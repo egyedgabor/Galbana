@@ -47,6 +47,7 @@ RUN pip install --no-cache-dir django-debug-toolbar==1.9.1
 RUN pip install --no-cache-dir django-extensions==2.0.3
 RUN pip install --no-cache-dir elasticsearch-dsl==6.1.0
 RUN pip install --no-cache-dir django-inlinecss==0.1.2
+RUN pip install --no-cache-dir coverage==4.5.1
 
 COPY docker/galbana/copy copy
 COPY docker/utils.sh copy/utils.sh

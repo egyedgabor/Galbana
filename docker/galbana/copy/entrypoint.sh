@@ -26,6 +26,7 @@ if [ "$1" = 'postgres' ]; then
 
   if ! (runsql '\du' | cut -d \| -f 1 | grep -qw django); then
     runsql "CREATE USER django"
+    runsql "ALTER USER django CREATEDB"
   fi
 
   db_password="$(read_secret DB_PASSWORD)"

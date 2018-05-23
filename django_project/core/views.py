@@ -50,19 +50,6 @@ def elastic():
     return ({'response': es, 'status': 'OK'})
 
 
-def flatten_json(y):
-    out = {}
-
-    def flatten(x, name=''):
-        if type(x) is dict:
-            for a in x:
-                flatten(x[a], name + a + '_')
-        else:
-            out[name[:-1]] = x
-    flatten(y)
-    return out
-
-
 class Sudo(LoginRequiredMixin, APIView, CSVRenderer):
     def get(self, request):
         if elastic()['status'] == 'ERROR':
