@@ -72,15 +72,16 @@ class Sudo(LoginRequiredMixin, APIView, CSVRenderer):
 
         s = Search(using=es, index="filebeat-*").from_dict({
             "query": {
-                "bool": {
-                    "must": [{
-                        "term": {"system.auth.program": "sudo"}
-                    }],
-                    "must_not": [], "should": []
+                "query_string": {
+                  "query": "_exists_:system.auth.sudo",
+                  "analyze_wildcard": 'true',
                 }
             },
 
-            "from": 0, "size": 1000, "sort": [], "aggs": {}
+            "from": 0, "size": 1000,
+            "sort": [
+              "@timestamp"
+            ], "aggs": {}
         }).execute().to_dict()
 
         return Response(s)
@@ -98,7 +99,6 @@ class Ssh(LoginRequiredMixin, APIView, CSVRenderer):
                 "query_string": {
                   "query": "_exists_:system.auth.ssh.method",
                   "analyze_wildcard": 'true',
-                  "default_field": "*"
                 }
             },
             "from": 0, "size": 1000,
@@ -106,6 +106,8 @@ class Ssh(LoginRequiredMixin, APIView, CSVRenderer):
               "@timestamp"
             ], "aggs": {}
         }).execute().to_dict()
+
+        return Response(s)
 
 
 class Postgres(LoginRequiredMixin, APIView, CSVRenderer):
