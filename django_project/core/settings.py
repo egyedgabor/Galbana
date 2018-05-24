@@ -1,7 +1,7 @@
 import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DEBUG = True
+DEBUG = [os.environ['DEV_MODE']]
 
 with open('/run/secrets/DJANGO_SECRET_KEY') as f:
     SECRET_KEY = f.read()
