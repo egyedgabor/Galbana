@@ -38,5 +38,5 @@ services:
     volumes:
       - "./.secrets/nginx:/run/secrets:ro"
     ports:
-      - "8001:80"
-      - "4430:443"
+      - "80:80"
+      - "443:443"

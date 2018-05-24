@@ -9,9 +9,9 @@ from .views import Sudo, index, Ssh, Postgres
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', include('django.contrib.auth.urls')),
     url(r'^$', auth_check(login), {'template_name': 'login.html'},
         name='login'),
-    path('/', include('django.contrib.auth.urls')),
     url(r'^home/', index.as_view()),
     url(r'^sudo/', Sudo.as_view(), name='sudo'),
     url(r'^ssh/', Ssh.as_view(), name='ssh'),
