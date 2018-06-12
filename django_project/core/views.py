@@ -11,6 +11,17 @@ from .renderers import CSVRenderer
 from .mixins import LoginRequiredMixin
 
 
+def error(message):
+    template = loader.get_template('not_working.html')
+    context = {
+        'error': message
+    }
+    return ({
+        'response': HttpResponse(template.render(context)),
+        'status': 'ERROR'
+    })
+
+
 def elastic():
     connections.configure(
         default={
@@ -38,15 +49,10 @@ def elastic():
     try:
         es.info()
     except es_exceptions.ConnectionError:
-        template = loader.get_template('not_working.html')
-        context = {
-            'host': os.environ['ELASTICSEARCH_HOST'],
-            'port': os.environ['ELASTICSEARCH_PORT']
-        }
-        return ({
-            'response': HttpResponse(template.render(context)),
-            'status': 'ERROR'
-        })
+        return error('Please check Elasticserach service, %s:%s' % (
+            os.environ['ELASTICSEARCH_HOST'],
+            os.environ['ELASTICSEARCH_PORT']
+        ))
     return ({'response': es, 'status': 'OK'})
 
 
@@ -70,8 +76,9 @@ class Sudo(LoginRequiredMixin, APIView, CSVRenderer):
               "@timestamp"
             ], "aggs": {}
         }).execute().to_dict()
-
-        return Response(s)
+        if s['hits'] == []:
+            return error("Query didn't fouany results")
+        return Response(s['hits']['hits'])
 
 
 class Ssh(LoginRequiredMixin, APIView, CSVRenderer):
@@ -93,8 +100,10 @@ class Ssh(LoginRequiredMixin, APIView, CSVRenderer):
               "@timestamp"
             ], "aggs": {}
         }).execute().to_dict()
-
-        return Response(s)
+        if not s['hits']['total']:
+            a = error("Query didn't found any results")
+            return a['response']
+        return Response(s['hits']['hits'])
 
 
 class Postgres(LoginRequiredMixin, APIView, CSVRenderer):
@@ -123,7 +132,11 @@ class Postgres(LoginRequiredMixin, APIView, CSVRenderer):
             "from": 0, "size": 1000, "sort": ['@timestamp'], "aggs": {}
         }).execute().to_dict()
 
-        return Response(s)
+        if not s['hits']['total']:
+            a = error("Query didn't found any results")
+            return a['response']
+
+        return Response(s['hits']['hits'])
 
 
 class index(LoginRequiredMixin, View):

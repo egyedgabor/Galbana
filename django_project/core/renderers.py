@@ -45,12 +45,12 @@ class CSVRenderer(BaseRenderer):
 
         f = BytesIO()
         writer = csv.writer(f, encoding='utf-8')
-        for elem in data['hits']['hits']:
+        for elem in data:
             flat = flatten_json(elem)
             keys = flat.keys()
         writer.writerow(keys)
 
-        for elem in data['hits']['hits']:
+        for elem in data:
             flat = flatten_json(elem)
             writer.writerow(flat.values())
 
