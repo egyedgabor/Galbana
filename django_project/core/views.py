@@ -65,19 +65,30 @@ class Sudo(LoginRequiredMixin, APIView, CSVRenderer):
 
         s = Search(using=es, index="filebeat-*").from_dict({
             "query": {
-                "query_string": {
-                  "query": "_exists_:system.auth.sudo",
-                  "analyze_wildcard": 'true',
+                "bool": {
+                    "must": [
+                        {
+                            "term": {"system.auth.program.keyword": "sudo"}
+                        },
+                        {
+                            "range": {
+                                "@timestamp": {
+                                    "gte": request.GET['start_day'],
+                                    "lte": request.GET['end_day']
+                                }
+                            }
+                        }
+                    ]
                 }
             },
-
             "from": 0, "size": 1000,
             "sort": [
               "@timestamp"
             ], "aggs": {}
         }).execute().to_dict()
-        if s['hits'] == []:
-            return error("Query didn't fouany results")
+        if not s['hits']['total']:
+            a = error("Query didn't found any results")
+            return a['response']
         return Response(s['hits']['hits'])
 
 
@@ -90,9 +101,20 @@ class Ssh(LoginRequiredMixin, APIView, CSVRenderer):
 
         s = Search(using=es, index="filebeat-*").from_dict({
             "query": {
-                "query_string": {
-                  "query": "_exists_:system.auth.ssh.method",
-                  "analyze_wildcard": 'true',
+                "bool": {
+                    "must": [
+                        {
+                            "term": {"system.auth.program.keyword": "ssh"}
+                        },
+                        {
+                            "range": {
+                                "@timestamp": {
+                                    "gte": request.GET['start_day'],
+                                    "lte": request.GET['end_day']
+                                }
+                            }
+                        }
+                    ]
                 }
             },
             "from": 0, "size": 1000,
@@ -116,11 +138,19 @@ class Postgres(LoginRequiredMixin, APIView, CSVRenderer):
         s = Search(using=es, index="filebeat-*").from_dict({
             "query": {
                 "bool": {
-                    "must": [{
-                        "wildcard": {
-                            "postgresql.log.user": "*"
+                    "must": [
+                        {
+                            "wildcard": {"postgresql.log.user": "*"}
+                        },
+                        {
+                            "range": {
+                                "@timestamp": {
+                                    "gte": request.GET['start_day'],
+                                    "lte": request.GET['end_day']
+                                }
+                            }
                         }
-                    }],
+                    ],
                     "must_not": [{
                         "term": {
                             "postgresql.log.user": "unknown"

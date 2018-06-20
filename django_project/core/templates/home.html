@@ -1,19 +1,136 @@
-{% extends 'admin/base.html' %}
 {% load staticfiles %}
 {% load i18n %}
 <!-- templates/home.html -->
 
-{% block title %}Home{% endblock %}
+<html lang="en">
+<!--<![endif]-->
+  <head>
+    <title>
+      {% block pagetitle %}
+        {% if title %}Galbana{% endif %}
+      {% endblock %}
+    </title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css"/>
 
-{% block content %}
-{% if user.is_authenticated %}
-  Hi {{ user.username }}!
-  <div>
-  <a href={% url 'sudo' %}?format=csv>sudo</a>
-  <br>
-  <a href={% url 'ssh' %}?format=csv>ssh</a>
-  <br>
-  <a href={% url 'postgres' %}?format=csv>postgres</a>
-  <p><a href="{% url 'logout' %}">logout</a></p>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" type="text/css" href="{% block stylesheet %}{% static "admin/css/base.css" %}{% endblock %}">
+    {% block extrastyle %}{% endblock %}
+    {% if LANGUAGE_BIDI %}<link rel="stylesheet" type="text/css" href="{% block stylesheet_rtl %}{% static "admin/css/rtl.css" %}{% endblock %}">{% endif %}
+    {% block extrahead %}{% endblock %}
+    {% block responsive %}
+        <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="{% static "admin/css/responsive.css" %}">
+        {% if LANGUAGE_BIDI %}<link rel="stylesheet" type="text/css" href="{% static "admin/css/responsive_rtl.css" %}">{% endif %}
+    {% endblock %}
+    {% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE">{% endblock %}
+  </head>
+  <body>
+  {% block content %}
+  {% if user.is_authenticated %}
+  <!-- Header -->
+  <div style="color: white" class="row breadcrumbs">
+    <div class="col-sm-3" style="margin-top: 5px">
+       <a style="font-size: 15px;" href="{% url 'admin:index' %}">{% trans 'Admin' %}</a>
+   </div>
+    <div class="col-sm-1" style="margin-top: 5px; text-align: right">Start day:</div>
+    <div class="col-sm-2">
+      <div class="form-group">
+          <div class='input-group date' id='start_day'>
+              <input type='text' class="form-control" id='start_day_value'/>
+              <span class="input-group-addon">
+                  <span class="glyphicon glyphicon-calendar"></span>
+              </span>
+          </div>
+      </div>
+    </div>
+    <div class="col-sm-1" style="margin-top: 5px; text-align: right" >End day:</div>
+    <div class="col-sm-2">
+      <div class="form-group">
+          <div class='input-group date' id='end_day'>
+              <input type='text' class="form-control" id='end_day_value'/>
+              <span class="input-group-addon">
+                  <span class="glyphicon glyphicon-calendar"></span>
+              </span>
+          </div>
+      </div>
+    </div>
+    <div class="col-sm-offset-2 col-sm-1" style="margin-top: 5px; text-align: right">
+       <a <a style="font-size: 15px;" href="{% url 'logout' %}">{% trans 'logout' %}</a>
+   </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-2">
+      <table>
+        <td style="vertical-align: inherit"> Sudo </td>
+        <td>  <input type="submit" value="Download" onclick="sudo();" /></td>
+      </table>
+    </div>
+    <div class="col-sm-2">
+      <table>
+        <td style="vertical-align: inherit"> SSH </td>
+        <td>  <input type="submit" value="Download" onclick="ssh();" /></td>
+      </table>
+    </div>
+    <div class="col-sm-2">
+      <table>
+        <td style="vertical-align: inherit"> POSTGRES </td>
+        <td>  <input type="submit" value="Download" onclick="postgres();" /></td>
+      </table>
+    </div>
+  </div>
+  <script type="text/javascript">
+      $(function () {
+          $('#start_day').datetimepicker({format: 'YYYY-MM-DD'});
+      });
+      $(function () {
+          $('#end_day').datetimepicker({format: 'YYYY-MM-DD'});
+      });
+  </script>
+  <script type="text/javascript">
+
+    function sudo() {
+        var start_day = document.getElementById('start_day_value').value;
+        var end_day = document.getElementById('end_day_value').value;
+        window.location = (
+          {% url 'sudo' %} + "?format=csv&start_day=" + start_day
+          + "&end_day=" + end_day)
+    }
+    function ssh() {
+        var start_day = document.getElementById('start_day').value;
+        var end_day = document.getElementById('end_day').value;
+        window.location = (
+          {% url 'ssh' %} + "?format=csv&start_day=" + start_day
+          + "&end_day=" + end_day)
+    }
+    function postgres() {
+        var start_day = document.getElementById('start_day').value;
+        var end_day = document.getElementById('end_day').value;
+        window.location = (
+          {% url 'postgres' %} + "?format=csv&start_day=" + start_day
+          + "&end_day=" + end_day)
+    }
+
+    var today = new Date();
+    var dd = today.getDate();
+    var mm = today.getMonth()+1; //January is 0!
+    var yyyy = today.getFullYear();
+
+    if(dd<10) {
+        dd = '0'+dd
+    }
+
+    if(mm<10) {
+        mm = '0'+mm
+    }
+
+    today = yyyy + '-' + mm + '-' + dd;
+    document.getElementById('start_day_value').defaultValue = today;
+    document.getElementById('end_day_value').defaultValue =  today;
+  </script>
+</body>
 {% endif %}
 {% endblock %}
