@@ -100,15 +100,15 @@
           + "&end_day=" + end_day)
     }
     function ssh() {
-        var start_day = document.getElementById('start_day').value;
-        var end_day = document.getElementById('end_day').value;
+        var start_day = document.getElementById('start_day_value').value;
+        var end_day = document.getElementById('end_day_value').value;
         window.location = (
           {% url 'ssh' %} + "?format=csv&start_day=" + start_day
           + "&end_day=" + end_day)
     }
     function postgres() {
-        var start_day = document.getElementById('start_day').value;
-        var end_day = document.getElementById('end_day').value;
+        var start_day = document.getElementById('start_day_value').value;
+        var end_day = document.getElementById('end_day_value').value;
         window.location = (
           {% url 'postgres' %} + "?format=csv&start_day=" + start_day
           + "&end_day=" + end_day)
