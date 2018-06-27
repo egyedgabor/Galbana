@@ -68,7 +68,7 @@ class Sudo(LoginRequiredMixin, APIView, CSVRenderer):
                 "bool": {
                     "must": [
                         {
-                            "term": {"system.auth.program.keyword": "sudo"}
+                            "term": {"system.auth.program": "sudo"}
                         },
                         {
                             "range": {
@@ -78,7 +78,9 @@ class Sudo(LoginRequiredMixin, APIView, CSVRenderer):
                                 }
                             }
                         }
-                    ]
+                    ],
+                    "must_not": [],
+                    "should": []
                 }
             },
             "from": 0, "size": 1000,
@@ -104,7 +106,7 @@ class Ssh(LoginRequiredMixin, APIView, CSVRenderer):
                 "bool": {
                     "must": [
                         {
-                            "term": {"system.auth.program.keyword": "ssh"}
+                            "term": {"system.auth.program": "sshd"}
                         },
                         {
                             "range": {
@@ -114,7 +116,9 @@ class Ssh(LoginRequiredMixin, APIView, CSVRenderer):
                                 }
                             }
                         }
-                    ]
+                    ],
+                    "must_not": [],
+                    "should": []
                 }
             },
             "from": 0, "size": 1000,
